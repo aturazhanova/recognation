@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Пример</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #343a40;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+        h1 {
+            color: #007bff;
+        }
+        form {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        input[type="file"] {
+            display: block;
+            margin: 20px auto;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            width: 80%;
+            max-width: 800px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+        #result h2 {
+            margin-top: 0;
+            color: #28a745;
+        }
+        #extractedText {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+    </style>
+</head>
+<body>
+    <h1>Загрузите изображение для OCR</h1>
+    <form id="fileForm">
+        <input type="file" id="fileInput" name="file" accept="image/*"><br>
+        <button type="submit">Отправить</button>
+    </form>
+
+    <div id="result">
+        <h2 style="color: #343a40;">Извлеченный текст:</h2>
+        <pre id="extractedText"></pre>
+    </div>
+
+    <script>
+        document.getElementById('fileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const fileInput = document.getElementById('fileInput').files[0];
+            const formData = new FormData();
+            formData.append('file', fileInput);
+
+            fetch('http://127.0.0.1:5001/extract-text', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Успех:', data);
+                const resultElement = document.getElementById('result');
+                const textElement = document.getElementById('extractedText');
+                resultElement.style.display = 'block';
+                if (data.text) {
+                    textElement.textContent = data.text;
+                } else {
+                    textElement.textContent = `Ошибка: ${data.error}`;
+                }
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                const resultElement = document.getElementById('result');
+                const textElement = document.getElementById('extractedText');
+                resultElement.style.display = 'block';
+                textElement.textContent = `Ошибка: ${error}`;
+            });
+        });
+    </script>
+</body>
+</html>
